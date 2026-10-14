@@ -1,0 +1,1099 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reason–Evidence Card Matching</title>
+
+  <style>
+    :root {
+      --bg: #f5f2eb;
+      --paper: #fffdf8;
+      --ivory: #f7efdd;
+      --sage: #688a73;
+      --sage-dark: #476b52;
+      --sage-light: #e9f0e8;
+      --brown: #7a6652;
+      --ink: #2e3631;
+      --border: #c8d4c8;
+      --red: #a94747;
+      --green: #39764d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      line-height: 1.5;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:focus-visible {
+      outline: 3px solid var(--sage-dark);
+      outline-offset: 3px;
+    }
+
+    .app {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      color: var(--sage-dark);
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 5px 0;
+      font-size: clamp(25px, 3vw, 38px);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--brown);
+    }
+
+    .progress {
+      display: flex;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #d8d8cf;
+    }
+
+    .dot.active {
+      background: var(--sage);
+    }
+
+    .screen {
+      display: none;
+      background: var(--paper);
+      border: 1px solid #e2ddd2;
+      border-radius: 20px;
+      padding: 30px;
+      min-height: 540px;
+      box-shadow: 0 10px 30px #514c3a0d;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .screen-title {
+      margin: 0 0 10px;
+      color: var(--sage-dark);
+      font-size: clamp(24px, 3vw, 33px);
+    }
+
+    .instruction {
+      margin: 0 0 24px;
+      color: #746d61;
+      font-size: 17px;
+    }
+
+    .topic {
+      padding: 18px;
+      background: var(--sage-light);
+      border-radius: 12px;
+      text-align: center;
+      font-size: clamp(18px, 2.5vw, 25px);
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    .positions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 850px;
+      margin: 35px auto;
+    }
+
+    .position-btn {
+      min-height: 190px;
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      background: var(--sage-light);
+      color: var(--sage-dark);
+      font-size: 34px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .position-btn.disagree {
+      background: #f5eadb;
+      border-color: #dfcdb5;
+      color: #846a4b;
+    }
+
+    .position-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 18px #00000012;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 25px 0;
+    }
+
+    .card {
+      background: var(--ivory);
+      border: 1.5px solid #d8cdb8;
+      border-radius: 12px;
+      padding: 18px 13px;
+      min-height: 145px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-size: clamp(14px, 1.35vw, 18px);
+      font-weight: 500;
+      line-height: 1.45;
+      color: var(--ink);
+      overflow-wrap: anywhere;
+    }
+
+    button.card:hover:not(:disabled) {
+      border-color: var(--sage);
+      background: #fff7e6;
+    }
+
+    .card.used {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .card.selected {
+      border: 3px solid var(--sage);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 21px;
+      background: var(--sage);
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .btn:hover {
+      background: var(--sage-dark);
+    }
+
+    .btn.secondary {
+      background: #e9e7df;
+      color: #514c43;
+    }
+
+    .btn.outline {
+      background: white;
+      border: 1px solid var(--sage);
+      color: var(--sage-dark);
+    }
+
+    .btn.warning {
+      background: #927356;
+    }
+
+    .worksheet {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #fffdf9;
+      border: 2px solid #c4d3c4;
+      border-radius: 15px;
+      padding: 25px;
+    }
+
+    .worksheet-header {
+      border-bottom: 2px solid #dce7dc;
+      padding-bottom: 15px;
+      margin-bottom: 16px;
+    }
+
+    .worksheet-header h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .worksheet-header p {
+      margin: 4px 0;
+      color: var(--brown);
+    }
+
+    .worksheet-goal {
+      font-size: 14px;
+      background: var(--sage-light);
+      padding: 11px;
+      border-radius: 7px;
+      margin-bottom: 14px;
+    }
+
+    .worksheet-topic {
+      font-size: 17px;
+      margin-bottom: 12px;
+    }
+
+    .position-tag {
+      display: inline-block;
+      padding: 5px 13px;
+      background: var(--sage);
+      color: white;
+      border-radius: 7px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .position-tag.disagree {
+      background: #927356;
+    }
+
+    .worksheet-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .slot {
+      border: 2px dashed #b6c9b6;
+      border-radius: 12px;
+      min-height: 150px;
+      padding: 12px;
+      background: #f5f7f2;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      cursor: pointer;
+      width: 100%;
+      color: var(--ink);
+    }
+
+    .slot:hover {
+      border-color: var(--sage);
+    }
+
+    .slot-label {
+      color: var(--sage-dark);
+      font-weight: bold;
+      font-size: 17px;
+    }
+
+    .slot-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      color: #8d958c;
+      font-size: 14px;
+    }
+
+    .slot.filled .slot-content {
+      background: var(--ivory);
+      color: var(--ink);
+      font-size: clamp(14px, 1.4vw, 18px);
+      font-weight: 500;
+      padding: 14px;
+    }
+
+    .slot.correct {
+      border-color: var(--green);
+      border-style: solid;
+    }
+
+    .slot.incorrect {
+      border-color: var(--red);
+      border-style: solid;
+    }
+
+    .feedback {
+      min-height: 30px;
+      margin-top: 16px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .feedback.success {
+      color: var(--green);
+    }
+
+    .feedback.error {
+      color: var(--red);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: #171b18b8;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 15px;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-panel {
+      width: min(1050px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      background: var(--paper);
+      padding: 24px;
+      border-radius: 18px;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      color: var(--sage-dark);
+    }
+
+    .close-btn {
+      border: none;
+      background: #eee9df;
+      border-radius: 8px;
+      font-size: 22px;
+      padding: 3px 12px;
+    }
+
+    .modal .cards-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .modal .card {
+      min-height: 135px;
+    }
+
+    .small-note {
+      color: #777066;
+      font-size: 14px;
+    }
+
+    @media (max-width: 850px) {
+      .cards-grid,
+      .modal .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .positions {
+        gap: 12px;
+      }
+
+      .position-btn {
+        min-height: 130px;
+        font-size: 26px;
+      }
+
+      .screen {
+        padding: 18px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        padding: 12px;
+      }
+
+      .worksheet {
+        padding: 12px;
+      }
+
+      .worksheet-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .slot {
+        min-height: 120px;
+      }
+
+      .cards-grid,
+      .modal .cards-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .card {
+        font-size: 13px;
+        min-height: 120px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <header>
+      <div>
+        <div class="eyebrow">Genre-Based Writing · Lesson 2</div>
+        <h1>Reason–Evidence Card Matching</h1>
+        <p class="subtitle">Building an Argument Together</p>
+      </div>
+
+      <div class="progress" aria-label="Activity progress">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </header>
+
+    <!-- STEP 1 -->
+    <section class="screen active" id="step1">
+      <h2 class="screen-title">Step 1. Choose Your Position</h2>
+
+      <p class="instruction">
+        Select the position you want to work on.
+      </p>
+
+      <div class="topic">
+        Are digital textbooks better for the environment than paper textbooks?
+      </div>
+
+      <div class="positions">
+        <button type="button" class="position-btn"
+                onclick="choosePosition('agree')">
+          AGREE
+        </button>
+
+        <button type="button" class="position-btn disagree"
+                onclick="choosePosition('disagree')">
+          DISAGREE
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="screen" id="step2">
+      <h2 class="screen-title">Step 2. Explore the Cards</h2>
+
+      <p class="instruction">
+        Read the eight cards. Which reasons and evidence support your position?
+      </p>
+
+      <div class="cards-grid" id="exploreCards"></div>
+
+      <div class="actions">
+        <button type="button" class="btn secondary"
+                onclick="goToStep(1)">
+          ← Back
+        </button>
+
+        <button type="button" class="btn"
+                onclick="goToStep(3)">
+          Go to Worksheet →
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="screen" id="step3">
+      <h2 class="screen-title">Step 3. Complete the Worksheet</h2>
+
+      <p class="instruction">
+        Click each box and choose a card.
+      </p>
+
+      <div class="worksheet">
+        <div class="worksheet-header">
+          <h2>Argument Worksheet 1</h2>
+          <p>Reason–Evidence Card Matching</p>
+        </div>
+
+        <div class="worksheet-goal">
+          <strong>Lesson Goal:</strong>
+          To identify relevant Reason–Evidence pairs and understand how
+          reasons and evidence support a Claim in an argument.
+        </div>
+
+        <div class="worksheet-topic">
+          <strong>TOPIC:</strong>
+          Are digital textbooks better for the environment than paper textbooks?
+        </div>
+
+        <div class="position-tag" id="positionTag">AGREE</div>
+
+        <div class="worksheet-grid" id="worksheetGrid"></div>
+      </div>
+
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+
+      <div class="actions">
+        <button type="button" class="btn secondary"
+                onclick="goToStep(2)">
+          ← Back to Cards
+        </button>
+
+        <button type="button" class="btn outline"
+                onclick="resetWorksheet()">
+          Reset Worksheet
+        </button>
+
+        <button type="button" class="btn"
+                onclick="checkAnswers()">
+          Check Answers
+        </button>
+
+        <button type="button" class="btn warning"
+                onclick="showAnswers()">
+          Show Correct Answers
+        </button>
+
+        <button type="button" class="btn secondary"
+                onclick="goToStep(1)">
+          Switch Position
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- CARD SELECTION POPUP -->
+  <div class="modal" id="cardModal"
+       role="dialog" aria-modal="true"
+       aria-labelledby="modalTitle">
+
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="modalTitle">Choose a Card</h2>
+
+        <button type="button" class="close-btn"
+                onclick="closeModal()" aria-label="Close">
+          ×
+        </button>
+      </div>
+
+      <p class="small-note">
+        Choose one of the eight cards. A card can be used only once
+        on the current worksheet.
+      </p>
+
+      <div class="cards-grid" id="modalCards"></div>
+
+      <button type="button" class="btn secondary"
+              onclick="removeCard()">
+        Remove Card from This Box
+      </button>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    // ============================================
+    // 1. CARD DATA
+    // ============================================
+
+    const cards = [
+      {
+        id: "A-R1",
+        text: "Digital textbooks can reduce paper use."
+      },
+      {
+        id: "A-E1",
+        text: "For example, schools print thousands of textbooks every year, and this uses many trees."
+      },
+      {
+        id: "A-R2",
+        text: "Digital textbooks can be updated without making new books."
+      },
+      {
+        id: "A-E2",
+        text: "For instance, schools can update digital textbooks online instead of printing new editions."
+      },
+      {
+        id: "D-R1",
+        text: "Digital textbooks use a lot of energy."
+      },
+      {
+        id: "D-E1",
+        text: "For example, students charge their tablets almost every day, and much electricity comes from burning coal."
+      },
+      {
+        id: "D-R2",
+        text: "Digital devices can create harmful waste."
+      },
+      {
+        id: "D-E2",
+        text: "For instance, old tablets contain materials that can pollute the environment if they are not recycled properly."
+      }
+    ];
+
+    // The eight cards are deliberately mixed.
+    const cardOrder = [
+      "D-R2", "A-E1", "D-R1", "A-E2",
+      "A-R1", "D-E2", "A-R2", "D-E1"
+    ];
+
+    const slotLabels = [
+      "Reason 1",
+      "Evidence 1",
+      "Reason 2",
+      "Evidence 2"
+    ];
+
+    // Keep AGREE and DISAGREE worksheets separately.
+    const savedWorksheets = {
+      agree: [null, null, null, null],
+      disagree: [null, null, null, null]
+    };
+
+    const correctAnswers = {
+      agree: ["A-R1", "A-E1", "A-R2", "A-E2"],
+      disagree: ["D-R1", "D-E1", "D-R2", "D-E2"]
+    };
+
+    let currentPosition = "agree";
+    let activeSlot = null;
+
+    // ============================================
+    // 2. HELPER FUNCTIONS
+    // ============================================
+
+    function getCard(id) {
+      return cards.find(function(card) {
+        return card.id === id;
+      });
+    }
+
+    function currentWorksheet() {
+      return savedWorksheets[currentPosition];
+    }
+
+    // ============================================
+    // 3. POSITION SELECTION
+    // ============================================
+
+    function choosePosition(position) {
+      if (position !== "agree" && position !== "disagree") {
+        return;
+      }
+
+      currentPosition = position;
+
+      const positionTag = document.getElementById("positionTag");
+
+      positionTag.textContent = position.toUpperCase();
+
+      positionTag.classList.toggle(
+        "disagree",
+        position === "disagree"
+      );
+
+      clearFeedback();
+
+      // Clicking AGREE or DISAGREE opens Step 2.
+      goToStep(2);
+    }
+
+    // ============================================
+    // 4. SCREEN NAVIGATION
+    // ============================================
+
+    function goToStep(stepNumber) {
+      const target = document.getElementById(
+        "step" + stepNumber
+      );
+
+      if (!target) {
+        console.error("Screen not found:", stepNumber);
+        return;
+      }
+
+      document.querySelectorAll(".screen").forEach(
+        function(screen) {
+          screen.classList.remove("active");
+        }
+      );
+
+      target.classList.add("active");
+
+      document.querySelectorAll(".dot").forEach(
+        function(dot, index) {
+          dot.classList.toggle(
+            "active",
+            index === stepNumber - 1
+          );
+        }
+      );
+
+      if (stepNumber === 2) {
+        renderExploreCards();
+      }
+
+      if (stepNumber === 3) {
+        renderWorksheet();
+      }
+
+      window.scrollTo(0, 0);
+    }
+
+    // ============================================
+    // 5. STEP 2: EXPLORE CARDS
+    // ============================================
+
+    function renderExploreCards() {
+      const container = document.getElementById("exploreCards");
+
+      container.innerHTML = "";
+
+      cardOrder.forEach(function(id) {
+        const card = getCard(id);
+        const element = document.createElement("div");
+
+        element.className = "card";
+        element.textContent = card.text;
+
+        container.appendChild(element);
+      });
+    }
+
+    // ============================================
+    // 6. STEP 3: WORKSHEET
+    // ============================================
+
+    function renderWorksheet() {
+      const grid = document.getElementById("worksheetGrid");
+      const worksheet = currentWorksheet();
+
+      grid.innerHTML = "";
+
+      worksheet.forEach(function(cardId, index) {
+        const slot = document.createElement("button");
+
+        slot.type = "button";
+        slot.className = "slot";
+
+        if (cardId !== null) {
+          slot.classList.add("filled");
+        }
+
+        const label = document.createElement("div");
+        label.className = "slot-label";
+        label.textContent = slotLabels[index];
+
+        const content = document.createElement("div");
+        content.className = "slot-content";
+
+        content.textContent = cardId !== null
+          ? getCard(cardId).text
+          : "Click to choose a card";
+
+        slot.appendChild(label);
+        slot.appendChild(content);
+
+        slot.addEventListener("click", function() {
+          openModal(index);
+        });
+
+        grid.appendChild(slot);
+      });
+    }
+
+    // ============================================
+    // 7. CARD SELECTION POPUP
+    // ============================================
+
+    function openModal(slotIndex) {
+      activeSlot = slotIndex;
+
+      document.getElementById("modalTitle").textContent =
+        "Choose a Card for " + slotLabels[slotIndex];
+
+      renderModalCards();
+
+      document.getElementById("cardModal").classList.add("open");
+    }
+
+    function closeModal() {
+      document.getElementById("cardModal").classList.remove("open");
+      activeSlot = null;
+    }
+
+    function renderModalCards() {
+      const container = document.getElementById("modalCards");
+      const worksheet = currentWorksheet();
+
+      container.innerHTML = "";
+
+      cardOrder.forEach(function(id) {
+        const card = getCard(id);
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className = "card";
+        button.textContent = card.text;
+
+        const alreadyUsed = worksheet.some(
+          function(usedId, index) {
+            return usedId === id && index !== activeSlot;
+          }
+        );
+
+        if (alreadyUsed) {
+          button.classList.add("used");
+          button.disabled = true;
+        }
+
+        if (worksheet[activeSlot] === id) {
+          button.classList.add("selected");
+        }
+
+        button.addEventListener("click", function() {
+          selectCard(id);
+        });
+
+        container.appendChild(button);
+      });
+    }
+
+    function selectCard(cardId) {
+      if (activeSlot === null) {
+        return;
+      }
+
+      const worksheet = currentWorksheet();
+
+      // One card cannot occupy two boxes.
+      const alreadyUsedElsewhere = worksheet.some(
+        function(id, index) {
+          return id === cardId && index !== activeSlot;
+        }
+      );
+
+      if (alreadyUsedElsewhere) {
+        return;
+      }
+
+      worksheet[activeSlot] = cardId;
+
+      closeModal();
+      renderWorksheet();
+      clearFeedback();
+    }
+
+    function removeCard() {
+      if (activeSlot === null) {
+        return;
+      }
+
+      currentWorksheet()[activeSlot] = null;
+
+      closeModal();
+      renderWorksheet();
+      clearFeedback();
+    }
+
+    // ============================================
+    // 8. FEEDBACK
+    // ============================================
+
+    function clearFeedback() {
+      const feedback = document.getElementById("feedback");
+
+      feedback.textContent = "";
+      feedback.className = "feedback";
+
+      document.querySelectorAll(".slot").forEach(
+        function(slot) {
+          slot.classList.remove("correct", "incorrect");
+        }
+      );
+    }
+
+    // ============================================
+    // 9. CHECK ANSWERS
+    // ============================================
+
+    function checkAnswers() {
+      const worksheet = currentWorksheet();
+      const expected = correctAnswers[currentPosition];
+      const feedback = document.getElementById("feedback");
+
+      clearFeedback();
+
+      const hasEmptySlot = worksheet.some(function(cardId) {
+        return cardId === null;
+      });
+
+      if (hasEmptySlot) {
+        feedback.textContent =
+          "Please complete all four boxes before checking.";
+
+        feedback.className = "feedback error";
+        return;
+      }
+
+      // The two correct pairs may appear in either order.
+      const expectedPairs = [
+        [expected[0], expected[1]],
+        [expected[2], expected[3]]
+      ];
+
+      const studentPairs = [
+        [worksheet[0], worksheet[1]],
+        [worksheet[2], worksheet[3]]
+      ];
+
+      const correctPairFlags = studentPairs.map(
+        function(pair) {
+          return expectedPairs.some(function(expectedPair) {
+            return (
+              pair[0] === expectedPair[0] &&
+              pair[1] === expectedPair[1]
+            );
+          });
+        }
+      );
+
+      document.querySelectorAll(".slot").forEach(
+        function(slot, index) {
+          const pairIndex = Math.floor(index / 2);
+
+          slot.classList.add(
+            correctPairFlags[pairIndex]
+              ? "correct"
+              : "incorrect"
+          );
+        }
+      );
+
+      const allCorrect = correctPairFlags.every(
+        function(value) {
+          return value === true;
+        }
+      );
+
+      if (allCorrect) {
+        feedback.textContent =
+          "Excellent! Both Reason–Evidence pairs are correct.";
+
+        feedback.className = "feedback success";
+      } else {
+        feedback.textContent =
+          "Some cards do not match. Check the reasons and supporting evidence again.";
+
+        feedback.className = "feedback error";
+      }
+    }
+
+    // ============================================
+    // 10. SHOW CORRECT ANSWERS
+    // ============================================
+
+    function showAnswers() {
+      const expected = correctAnswers[currentPosition];
+
+      savedWorksheets[currentPosition] = expected.slice();
+
+      renderWorksheet();
+
+      document.querySelectorAll(".slot").forEach(
+        function(slot) {
+          slot.classList.add("correct");
+        }
+      );
+
+      const feedback = document.getElementById("feedback");
+
+      feedback.textContent =
+        "These are the correct Reason–Evidence pairs.";
+
+      feedback.className = "feedback success";
+    }
+
+    // ============================================
+    // 11. RESET WORKSHEET
+    // ============================================
+
+    function resetWorksheet() {
+      savedWorksheets[currentPosition] = [
+        null, null, null, null
+      ];
+
+      renderWorksheet();
+      clearFeedback();
+    }
+
+    // ============================================
+    // 12. INITIALIZE APP
+    // ============================================
+
+    function initializeApp() {
+      const modal = document.getElementById("cardModal");
+
+      // Close popup by clicking the dark background.
+      modal.addEventListener("click", function(event) {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      // Close popup by pressing Escape.
+      document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      renderExploreCards();
+    }
+
+    // Start only after HTML elements have loaded.
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        initializeApp
+      );
+    } else {
+      initializeApp();
+    }
+  </script>
+</body>
+</html>
